@@ -2,7 +2,7 @@ import os
 from os.path import join
 from argparse import ArgumentParser
 import cv2
-
+import numpy as np
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
 from reportlab.graphics import renderPDF, renderPM
 from reportlab.graphics.shapes import *
@@ -31,23 +31,29 @@ def main():
 		src_subfiles = os.listdir(join(src_dir, subdir))
 
 		for subfile in src_subfiles:
-			
+			if not (subfile[-3:] == 'png' or subfile[-3:] == 'jpg'):
+				continue
 			#convert rgba to rgb
 			im_rgba = cv2.imread(join(src_dir, subdir, subfile), cv2.IMREAD_UNCHANGED)
-			im_rgba = im_rgba/255.
 
-			im_rgb = im_rgba[:, :, :3]
-			im_rgb[:, :, 0] = im_rgba[:,:, 0] * im_rgba[:,:, 3] + (1-im_rgba[:,:, 3]) * 1
-			im_rgb[:, :, 1] = im_rgba[:,:, 1] * im_rgba[:,:, 3] + (1-im_rgba[:,:, 3]) * 1
-			im_rgb[:, :, 2] = im_rgba[:,:, 2] * im_rgba[:,:, 3] + (1-im_rgba[:,:, 3]) * 1
-			
+			im_rgba = im_rgba/255.
+			if len(im_rgba.shape) == 2:
+				im_rgba = np.expand_dims(im_rgba, axis=2)
+				im_rgb = np.concatenate((im_rgba, im_rgba, im_rgba),axis=2)
+			elif im_rgba.shape[2] == 4:
+				im_rgb = im_rgba[:, :, :3]
+				im_rgb[:, :, 0] = im_rgba[:,:, 0] * im_rgba[:,:, 3] + (1-im_rgba[:,:, 3]) * 1
+				im_rgb[:, :, 1] = im_rgba[:,:, 1] * im_rgba[:,:, 3] + (1-im_rgba[:,:, 3]) * 1
+				im_rgb[:, :, 2] = im_rgba[:,:, 2] * im_rgba[:,:, 3] + (1-im_rgba[:,:, 3]) * 1
+			elif im_rgba.shape[2] == 3:
+				im_rgb=im_rgba
 			tmp_file = "tmp.png"
 			cv2.imwrite(tmp_file, im_rgb*255)
 
 			#call color trace
 			python = "python36"
 			trace_exe = "color_trace_multi.py"
-			command_args = [python, trace_exe, "-i", tmp_file, "-o", join(dst_dir, subdir, subfile[:-4]+".svg"), "-c", "10", "-v", "-s"]
+			command_args = [python, trace_exe, "-i", "\"%s\""%tmp_file, "-o", "\"%s\""%join(dst_dir, subdir, subfile[:-4]+".svg"), "-c", "0", "-v", "-s"]# -c 0 for grey image, 10 for rgb image
 			command_str = " ".join(command_args)
 			os.system(command_str)
 
@@ -117,4 +123,4 @@ def main_combine():
 
 if __name__ == '__main__':
 	
-	main_combine()
+	main()
