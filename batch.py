@@ -53,7 +53,7 @@ def main():
 			#call color trace
 			python = "python36"
 			trace_exe = "color_trace_multi.py"
-			command_args = [python, trace_exe, "-i", "\"%s\""%tmp_file, "-o", "\"%s\""%join(dst_dir, subdir, subfile[:-4]+".svg"), "-c", "0", "-v", "-s"]# -c 0 for grey image, 10 for rgb image
+			command_args = [python, trace_exe, "-i", "\"%s\""%tmp_file, "-o", "\"%s\""%join(dst_dir, subdir, subfile[:-4]+".svg"), "-c", "10", "-v", "-s"]# -c 0 for grey image, 10 for rgb image
 			command_str = " ".join(command_args)
 			os.system(command_str)
 
