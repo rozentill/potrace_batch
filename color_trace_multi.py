@@ -630,7 +630,7 @@ def color_trace_multi(inputs, outputs, colors, quantization='mc', dither=None,
             raise e
         else:
             #...or after tracing
-            remfiles(this_scaled, this_reduced, this_layer, this_trace)
+            remfiles(this_scaled, this_reduced, this_trace)
 
 
 def remfiles(*filepaths):

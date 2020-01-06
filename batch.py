@@ -85,20 +85,26 @@ def main_convert_rgba2rgb():
 			cv2.imwrite(join(dst_dir, subdir, subfile), im_rgb*255)
 
 
-def add_svg(file, canvas, x, y):
+def add_svg(file, canvas, x, y, sx, sy):
 	drawing = svg2rlg(file)
+	drawing.width = 20
+	drawing.height = 20
+	drawing.scale(sx, sy)
 	# print(drawing.width)
 	# print(drawing.height)
 	renderPDF.draw(drawing, canvas, x, y)
 def add_png(file, canvas, x, y):
+	
 	print(file)
 	drawing = Drawing(20, 20)
 	img = Image(0,0,20,20, file)
 	drawing.add(img)
 	renderPDF.draw(drawing, canvas, x, y)
+
 def main_combine():
 
 	my_canvas = canvas.Canvas('svg_on_canvas.pdf')
+	my_canvas.setPageSize((600, 100))
 	num = 0
 	src_dir, dst_dir = parse_args()
 
@@ -112,9 +118,15 @@ def main_combine():
 			x = (num %10) * 60
 			y = (num /10) * 32 - 3*(num%10)
 			print(subfile)
-			add_png(join(src_dir, subdir, subfile[:-4]+".png"), my_canvas, x, y)
+			f_img = join(src_dir, subdir, subfile[:-4]+".png")
+			img = cv2.imread(f_img)
+			ox = img.shape[1]
+			oy = img.shape[0]
+			sx = 20./ox
+			sy = 20./oy
+			add_png(f_img, my_canvas, x, y)
 			x += 25
-			add_svg(join(dst_dir, subdir, subfile), my_canvas, x, y)
+			add_svg(join(dst_dir, subdir, subfile), my_canvas, x, y, sx, sy)
 			num+=1
 
 	my_canvas.save()
@@ -123,4 +135,4 @@ def main_combine():
 
 if __name__ == '__main__':
 	
-	main()
+	main_combine()
